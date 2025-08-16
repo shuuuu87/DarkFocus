@@ -20,43 +20,37 @@ def call_mistral_api(messages, user_name=None, ai_name=None, personality=None, i
         'Authorization': f'Bearer {OPENROUTER_API_KEY}',
         'Content-Type': 'application/json',
     }
-    
     # Different prompts and token limits for different response types
     if is_timetable:
-        system_prompt = f"""
-Create a comprehensive study timetable in HTML table format with proper styling:
-- Include time slots, subjects, and break periods
-- Use colors and professional styling
-- Make it complete and visually appealing
-- Add icons and proper formatting
-"""
+        system_prompt = (
+            "Create a comprehensive study timetable in HTML table format with proper styling:\n"
+            "- Include time slots, subjects, and break periods\n"
+            "- Use colors and professional styling\n"
+            "- Make it complete and visually appealing\n"
+            "- Add icons and proper formatting"
+        )
         max_tokens = 800  # Much higher for timetables
     elif is_detailed:
-        system_prompt = f"""
-You're a knowledgeable study buddy providing detailed explanations:
-- Give comprehensive, clear explanations
-- Break down complex topics step by step
-- Use examples to illustrate concepts
-- Be educational and thorough
-- Help the user truly understand the topic
-"""
+        system_prompt = (
+            "You're a knowledgeable study buddy providing detailed explanations:\n"
+            "- Give comprehensive, clear explanations\n"
+            "- Break down complex topics step by step\n"
+            "- Use examples to illustrate concepts\n"
+            "- Be educational and thorough\n"
+            "- Help the user truly understand the topic"
+        )
         max_tokens = 800  # Higher for detailed explanations
     else:
-        system_prompt = f"""
-You're a chill study buddy. Be EXTREMELY brief and casual:
-- NO greetings unless user greets first  
-- ONE sentence max, 5-10 words only
-- Use casual replies: "Nice!", "Cool", "Got it", "What's up?"
-- Sound like quick texting, not explanations
+        system_prompt = (
+            "You are a friendly, knowledgeable AI study companion. Give clear, helpful, and complete answers to the user's questions:\n"
+            "- Use a supportive and encouraging tone\n"
+            "- Give explanations, examples, or advice as needed\n"
+            "- Be concise but not overly brief (2-5 sentences is good)\n"
+            "- If the user asks for a definition or explanation, provide a full answer\n"
+            "- If the user just chats, respond naturally and keep the conversation going"
+        )
+        max_tokens = 200  # Allow more complete answers for regular responses
 
-Examples:
-"you are great" → "Thanks!"
-"i like my friend" → "Nice! What's their name?"  
-"science is hard" → "Which part?"
-"help me" → "Sure, what with?"
-"""
-        max_tokens = 25  # Keep short for regular responses
-    
     if user_name:
         system_prompt += f"\nThe user's name is {user_name}."
     if ai_name:
@@ -67,7 +61,7 @@ Examples:
     payload = {
         "model": MODEL,
         "messages": [{"role": "system", "content": system_prompt}] + messages,
-        "max_tokens": max_tokens
+        "max_tokens": max_tokens,
     }
     response = requests.post(API_URL, headers=headers, json=payload)
     response.raise_for_status()
