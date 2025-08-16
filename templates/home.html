@@ -1,0 +1,183 @@
+<!-- Timer functionality is now handled by the TimerManager class in timer.js -->
+{% extends "base.html" %}
+
+{% block title %}Home - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Welcome, {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star text-warning"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ "%.1f"|format(current_user.total_points) }}</div>
+                    <div class="stat-label">Total Points</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card rank-card">
+                <div class="stat-icon">
+                    <i class="fas fa-crown text-warning"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ user_rank }}</div>
+                    <div class="stat-label">Current Rank</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-fire text-danger"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ current_user.current_streak }}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add New Task -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card task-card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle text-primary"></i> Add New Task</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.add_task') }}" class="row g-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="col-md-6">
+                            <label for="title" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" name="title" id="title" required maxlength="200">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="duration_minutes" class="form-label">Duration (minutes)</label>
+                            <input type="number" class="form-control" name="duration_minutes" id="duration_minutes" 
+                                   min="1" max="720" required>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Tasks -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card task-card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock text-primary"></i> Active Tasks</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_tasks %}
+                        <div class="row">
+                            {% for task in active_tasks %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="task-item paused" data-task-id="{{ task.id }}">
+                                    <div class="task-header">
+                                        <h6 class="task-title">{{ task.title }}</h6>
+                                        <div class="task-duration">{{ task.duration_minutes }} min</div>
+                                    </div>
+                                    
+                                    <div class="timer-display" data-remaining="{{ task.duration_minutes * 60 }}">
+                                        {{ task.get_time_display() }}
+                                    </div>
+                                    
+                                    <div class="task-controls">
+                                        <a href="{{ url_for('main.start_timer', task_id=task.id) }}" 
+                                           class="btn btn-success btn-sm">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                        <a href="{{ url_for('main.delete_task', task_id=task.id) }}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Are you sure you want to delete this task?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Active Tasks</h5>
+                            <p class="text-muted">Add a new task above to start your study session</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer Call to Action -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="cta-card">
+                <div class="cta-content">
+                    <h4 class="text-primary mb-2">
+                        <i class="fas fa-brain"></i> Ready to Master Deep Focus?
+                    </h4>
+                    <p class="mb-3">Study 2+ hours daily to maintain your streak</p>
+                    <a href="{{ url_for('main.help') }}" class="btn btn-primary">
+                        <i class="fas fa-question-circle"></i> Know About Batches
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timer Complete Modal -->
+<div class="modal fade" id="timerCompleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary">
+                    <i class="fas fa-trophy"></i> Task Completed!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h4>Congratulations!</h4>
+                <p class="mb-2">You've completed your task and earned:</p>
+                <h3 class="text-primary" id="pointsEarned">0 points</h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="continueBtn" onclick="refreshPage()">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshPage() {
+    // Close the modal first
+    const modal = bootstrap.Modal.getInstance(document.getElementById('timerCompleteModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Refresh the page after a short delay to ensure modal closes
+    setTimeout(() => {
+        window.location.reload();
+    }, 300);
+}
+</script>
+{% endblock %}

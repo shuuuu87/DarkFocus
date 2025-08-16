@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Competition - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Competition{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Challenge Someone -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sword text-primary"></i> Challenge Someone
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="opponent_username" class="form-label">Opponent Username</label>
+                            {{ form.opponent_username(class="form-control", placeholder="Enter username") }}
+                            {% if form.opponent_username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.opponent_username.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="duration_days" class="form-label">Duration</label>
+                            {{ form.duration_days(class="form-control") }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane"></i> Send Challenge
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Competition Rules -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle text-primary"></i> Competition Rules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="rule-item">
+                        <i class="fas fa-trophy text-warning"></i>
+                        <span>Winner gains: (Winner points - Loser points)</span>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-heart text-success"></i>
+                        <span>Loser gains: 2 consolation points</span>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-clock text-info"></i>
+                        <span>Duration: 2 or 7 days</span>
+                    </div>
+                    <div class="rule-item">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        <span>Most study points wins</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Challenges Progress -->
+    {% if active_challenges %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy text-warning"></i> Active Challenges
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for challenge in active_challenges %}
+                    <div class="challenge-progress mb-3 p-3" style="background: #2a2a2a; border-radius: 8px; border-left: 4px solid #00ff88;">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="text-primary mb-2">
+                                    {% if challenge.challenger_id == current_user.id %}
+                                        vs {{ challenge.challenged.username }}
+                                    {% else %}
+                                        vs {{ challenge.challenger.username }}
+                                    {% endif %}
+                                    <span class="badge bg-warning ms-2">{{ challenge.duration_days }} days</span>
+                                </h6>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    {% set total_points = challenge.challenger_points + challenge.challenged_points %}
+                                    {% set challenger_percent = (challenge.challenger_points / total_points * 100) if total_points > 0 else 50 %}
+                                    <div class="progress-bar bg-primary" style="width: {{ challenger_percent }}%"></div>
+                                    <div class="progress-bar bg-info" style="width: {{ 100 - challenger_percent }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>{{ challenge.challenger.username }}: {{ challenge.challenger_points|round(1) }} pts</span>
+                                    <span>{{ challenge.challenged.username }}: {{ challenge.challenged_points|round(1) }} pts</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="text-warning">
+                                    <i class="fas fa-clock"></i>
+                                    Ends: {{ challenge.end_date.strftime('%b %d, %Y %I:%M %p') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Received Challenges -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-inbox text-primary"></i> Received Challenges
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if received_challenges %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Challenger</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for challenge in received_challenges %}
+                                    <tr>
+                                        <td>{{ challenge.challenger.username }}</td>
+                                        <td>{{ challenge.duration_days }} days</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'warning' if challenge.status == 'pending' else 'success' if challenge.status == 'active' else 'secondary' }}">
+                                                {{ challenge.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ challenge.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td>
+                                            {% if challenge.status == 'pending' %}
+                                                <a href="{{ url_for('main.accept_challenge', challenge_id=challenge.id) }}" 
+                                                   class="btn btn-success btn-sm">Accept</a>
+                                                <a href="{{ url_for('main.decline_challenge', challenge_id=challenge.id) }}" 
+                                                   class="btn btn-danger btn-sm">Decline</a>
+                                            {% elif challenge.status == 'completed' and challenge.winner_id %}
+                                                {% if challenge.winner_id == current_user.id %}
+                                                    <span class="text-success"><i class="fas fa-trophy"></i> Won</span>
+                                                {% else %}
+                                                    <span class="text-muted"><i class="fas fa-times"></i> Lost</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Challenges Received</h5>
+                            <p class="text-muted">You haven't received any challenges yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sent Challenges -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-paper-plane text-primary"></i> Sent Challenges
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if sent_challenges %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Opponent</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for challenge in sent_challenges %}
+                                    <tr>
+                                        <td>{{ challenge.challenged.username }}</td>
+                                        <td>{{ challenge.duration_days }} days</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'warning' if challenge.status == 'pending' else 'success' if challenge.status == 'active' else 'secondary' }}">
+                                                {{ challenge.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ challenge.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td>
+                                            {% if challenge.status == 'completed' and challenge.winner_id %}
+                                                {% if challenge.winner_id == current_user.id %}
+                                                    <span class="text-success"><i class="fas fa-trophy"></i> Won</span>
+                                                {% else %}
+                                                    <span class="text-muted"><i class="fas fa-times"></i> Lost</span>
+                                                {% endif %}
+                                            {% elif challenge.status == 'declined' %}
+                                                <span class="text-warning"><i class="fas fa-ban"></i> Declined</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Challenges Sent</h5>
+                            <p class="text-muted">Challenge someone to start competing!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

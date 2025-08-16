@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Help - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Help{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Ranking System -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crown text-warning"></i> Ranking System - Know About Batches
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="rank-grid">
+                        <div class="rank-item">
+                            <div class="rank-badge dormant">
+                                <img src="/static/img/badges/badge1.png" alt="Dormant Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Dormant</h6>
+                                <span>0 - 100 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge initiate">
+                                <img src="/static/img/badges/badge2.png" alt="Initiate Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Initiate</h6>
+                                <span>101 - 300 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge grinder">
+                                <img src="/static/img/badges/badge3.png" alt="Grinder Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Grinder</h6>
+                                <span>301 - 600 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge executor">
+                                <img src="/static/img/badges/badge4.png" alt="Executor Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Executor</h6>
+                                <span>601 - 1000 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge obsessor">
+                                <img src="/static/img/badges/badge5.png" alt="Obsessor Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Obsessor</h6>
+                                <span>1001 - 1500 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge disciplinar">
+                                <img src="/static/img/badges/badge6.png" alt="Disciplinar Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Disciplinar</h6>
+                                <span>1501 - 2000 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge sentinel">
+                                <img src="/static/img/badges/badge7.png" alt="Sentinel Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Sentinel</h6>
+                                <span>2001 - 2600 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge dominus">
+                                <img src="/static/img/badges/badge8.png" alt="Dominus Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Dominus</h6>
+                                <span>2601 - 3300 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge phantom">
+                                <img src="/static/img/badges/badge9.png" alt="Phantom Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Phantom</h6>
+                                <span>3301 - 4000 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge apex-mind">
+                                <img src="/static/img/badges/badge10.png" alt="Apex Mind Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Apex Mind</h6>
+                                <span>4001 - 4700 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge system-override">
+                                <img src="/static/img/badges/badge11.png" alt="System Override Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>System Override</h6>
+                                <span>4701 - 5500 points</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rank-item">
+                            <div class="rank-badge darkensul-core">
+                                <img src="/static/img/badges/badge12.png" alt="Darkensul Core Badge" class="badge-img">
+                            </div>
+                            <div class="rank-info">
+                                <h6>Darkensul Core</h6>
+                                <span>5501+ points</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Points System -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star text-warning"></i> Points System
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-clock text-primary"></i>
+                        <div>
+                            <strong>1 minute = 0.083 points</strong>
+                            <small class="text-muted d-block">12 minutes = 1 point</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-trophy text-warning"></i>
+                        <div>
+                            <strong>Complete tasks to earn points</strong>
+                            <small class="text-muted d-block">Points accumulate for lifetime rank progression</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-chart-line text-success"></i>
+                        <div>
+                            <strong>Partial minutes count</strong>
+                            <small class="text-muted d-block">Even incomplete tasks give proportional points</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire text-danger"></i> Streak System
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-clock text-primary"></i>
+                        <div>
+                            <strong>Study 2+ hours daily</strong>
+                            <small class="text-muted d-block">120 minutes minimum to maintain streak</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-heart text-success"></i>
+                        <div>
+                            <strong>1-day forgiveness</strong>
+                            <small class="text-muted d-block">Skip one day without losing streak</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <div>
+                            <strong>No consecutive skips</strong>
+                            <small class="text-muted d-block">2 missed days = reset to 0</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Timer Rules -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stopwatch text-primary"></i> Timer Rules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-play text-success"></i>
+                        <div>
+                            <strong>Single active timer</strong>
+                            <small class="text-muted d-block">Only one timer can run at a time</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-pause text-warning"></i>
+                        <div>
+                            <strong>Unlimited pausing</strong>
+                            <small class="text-muted d-block">Pause and resume anytime</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-trash text-danger"></i>
+                        <div>
+                            <strong>Auto-delete after 3 days</strong>
+                            <small class="text-muted d-block">Paused tasks are removed if inactive</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy text-warning"></i> Competition Rules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-calendar text-primary"></i>
+                        <div>
+                            <strong>2 or 7 day challenges</strong>
+                            <small class="text-muted d-block">Choose competition duration</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-medal text-warning"></i>
+                        <div>
+                            <strong>Winner takes points difference</strong>
+                            <small class="text-muted d-block">Gain (your points - opponent points)</small>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-handshake text-success"></i>
+                        <div>
+                            <strong>Loser gets 2 consolation points</strong>
+                            <small class="text-muted d-block">Everyone gets something for participating</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Getting Started -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket text-primary"></i> Getting Started
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">1</div>
+                                <h6>Create Tasks</h6>
+                                <p class="text-muted">Add study tasks with custom durations (1-720 minutes)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">2</div>
+                                <h6>Start Timer</h6>
+                                <p class="text-muted">Begin your focused study session and earn points</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">3</div>
+                                <h6>Track Progress</h6>
+                                <p class="text-muted">Monitor your rank, streaks, and challenge friends</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

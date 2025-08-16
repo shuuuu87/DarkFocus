@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}AI Friend - DARKSULFOCUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Chat Interface -->
+            <div class="card bg-dark border-secondary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>{{ current_user.ai_name }}
+                        <small class="text-muted ms-2">Your AI Study Companion</small>
+                    </h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="clearHistory()">
+                            <i class="fas fa-trash"></i> Clear Chat
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body" style="height: 500px; overflow-y: auto;" id="chatContainer">
+                    {% if chat_history %}
+                        {% for chat in chat_history %}
+                        <div class="chat-message mb-3 {% if chat.sender == 'user' %}user-message{% else %}ai-message{% endif %}">
+                            <div class="d-flex {% if chat.sender == 'user' %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                <div class="message-bubble p-3 rounded-3 {% if chat.sender == 'user' %}bg-primary text-white{% else %}bg-secondary text-white{% endif %}" style="max-width: 75%;">
+                                    <div class="message-header small mb-1">
+                                        <strong>{% if chat.sender == 'user' %}You{% else %}{{ current_user.ai_name }}{% endif %}</strong>
+                                        <span class="text-muted ms-2">{{ chat.timestamp.strftime('%m/%d %H:%M') }}</span>
+                                    </div>
+                                    <div class="message-content">{{ chat.message | safe }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-robot fa-3x mb-3 text-primary"></i>
+                            <h5>Hello, {{ current_user.username }}!</h5>
+                            <p>I'm {{ current_user.ai_name }}, your personal AI study companion trained specifically for you! I learn about your study preferences, remember our conversations, and provide personalized motivation and advice.</p>
+                            <p class="small text-info">✨ Try saying "Hi", asking for motivation, or tell me about your study preferences!</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-dark border-secondary text-white" 
+                               id="messageInput" placeholder="Ask me anything about studying, motivation, or just chat..." 
+                               maxlength="1000">
+                        <button class="btn btn-primary" type="button" id="sendButton" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                    <small class="text-info mt-2 d-block">
+                        <i class="fas fa-brain"></i> Powered by Personal AI - learns and adapts to your study patterns!
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- User Qualities Panel -->
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-user-graduate me-2"></i>What {{ current_user.ai_name }} Knows About You</h6>
+                </div>
+                <div class="card-body" id="qualitiesPanel">
+                    {% if user_qualities %}
+                        {% for quality in user_qualities %}
+                        <div class="quality-item mb-2">
+                            <span class="badge bg-info me-2">{{ quality.quality_name.replace('_', ' ').title() }}</span>
+                            <span class="text-light">{{ quality.quality_value }}</span>
+                            <small class="text-muted d-block">Learned: {{ quality.learned_date.strftime('%m/%d/%Y') }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-lightbulb text-warning fa-2x mb-2"></i>
+                            <p class="text-muted small">
+                                {{ current_user.ai_name }} will learn about your study preferences, habits, and goals as you chat! The more you share, the more personalized your experience becomes.
+                            </p>
+                            <div class="small text-info">
+                                <strong>Try telling me:</strong><br>
+                                • "I like studying in the morning"<br>
+                                • "I'm a visual learner"<br>
+                                • "I struggle with math"<br>
+                                • "I study best at the library"
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Study Stats -->
+            <div class="card bg-dark border-secondary mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Your Progress</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary mb-0">{{ current_user.get_rank() }}</h4>
+                            <small class="text-muted">Current Rank</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success mb-0">{{ "%.0f"|format(current_user.total_points) }}</h4>
+                            <small class="text-muted">Total Points</small>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <h4 class="text-warning mb-0">{{ current_user.current_streak }}</h4>
+                            <small class="text-muted">Day Streak</small>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <h4 class="text-info mb-0">{{ current_user.total_study_time }}</h4>
+                            <small class="text-muted">Minutes Studied</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header">
+                <h5 class="modal-title">AI Friend Settings</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="aiNameInput" class="form-label">AI Name</label>
+                    <input type="text" class="form-control bg-dark border-secondary text-white" 
+                           id="aiNameInput" value="{{ current_user.ai_name }}" maxlength="64">
+                    <div class="form-text">What would you like to call your AI companion?</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="personalitySelect" class="form-label">Personality Style</label>
+                    <select class="form-select bg-dark border-secondary text-white" id="personalitySelect">
+                        <option value="supportive" {% if current_user.ai_personality == 'supportive' %}selected{% endif %}>Supportive & Encouraging</option>
+                        <option value="motivational" {% if current_user.ai_personality == 'motivational' %}selected{% endif %}>Motivational & Energetic</option>
+                        <option value="casual" {% if current_user.ai_personality == 'casual' %}selected{% endif %}>Casual & Friendly</option>
+                        <option value="professional" {% if current_user.ai_personality == 'professional' %}selected{% endif %}>Professional & Focused</option>
+                    </select>
+                    <div class="form-text">Choose how your AI friend communicates with you.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let isLoading = false;
+
+function sendMessage() {
+    if (isLoading) return;
+    
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat immediately
+    addMessageToChat('user', message, 'You', new Date());
+    input.value = '';
+    
+    // Show loading
+    setLoading(true);
+    const loadingId = addMessageToChat('ai', 'Thinking...', '{{ current_user.ai_name }}', new Date());
+    
+    // Send to server
+    const formData = new FormData();
+    formData.append('message', message);
+    formData.append('csrf_token', '{{ csrf_token() }}');
+    
+    fetch('/ai-friend/chat', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove loading message
+        document.getElementById(loadingId).remove();
+        
+        if (data.success) {
+            addMessageToChat('ai', data.ai_response, '{{ current_user.ai_name }}', new Date(data.timestamp));
+        } else {
+            addMessageToChat('ai', 'Sorry, I had trouble processing that message.', '{{ current_user.ai_name }}', new Date());
+        }
+    })
+    .catch(error => {
+        document.getElementById(loadingId).remove();
+        addMessageToChat('ai', 'Sorry, something went wrong. Please try again.', '{{ current_user.ai_name }}', new Date());
+        console.error('Chat error:', error);
+    })
+    .finally(() => {
+        setLoading(false);
+    });
+}
+
+function addMessageToChat(sender, message, senderName, timestamp) {
+    const chatContainer = document.getElementById('chatContainer');
+    const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message mb-3 ${sender}-message`;
+    messageDiv.id = messageId;
+    
+    const isUser = sender === 'user';
+    const timeStr = timestamp.toLocaleTimeString('en-US', {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'});
+    
+    // Check if message contains HTML (like timetables)
+    const isHtmlMessage = message.includes('<table') || message.includes('<div');
+    
+    messageDiv.innerHTML = `
+        <div class="d-flex ${isUser ? 'justify-content-end' : 'justify-content-start'}">
+            <div class="message-bubble p-3 rounded-3 ${isUser ? 'bg-primary text-white' : 'bg-secondary text-white'}" style="max-width: 75%;">
+                <div class="message-header small mb-1">
+                    <strong>${senderName}</strong>
+                    <span class="text-muted ms-2">${timeStr}</span>
+                </div>
+                <div class="message-content">${message}</div>
+            </div>
+        </div>
+    `;
+    
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    return messageId;
+}
+
+function setLoading(loading) {
+    isLoading = loading;
+    const sendButton = document.getElementById('sendButton');
+    const input = document.getElementById('messageInput');
+    
+    sendButton.disabled = loading;
+    input.disabled = loading;
+    
+    if (loading) {
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending';
+    } else {
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+    }
+}
+
+function saveSettings() {
+    const aiName = document.getElementById('aiNameInput').value.trim();
+    const personality = document.getElementById('personalitySelect').value;
+    
+    if (!aiName) {
+        alert('AI name cannot be empty');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('ai_name', aiName);
+    formData.append('ai_personality', personality);
+    formData.append('csrf_token', '{{ csrf_token() }}');
+    
+    fetch('/ai-friend/settings', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to update AI name in chat
+        } else {
+            alert('Failed to save settings');
+        }
+    })
+    .catch(error => {
+        alert('Error saving settings');
+        console.error('Settings error:', error);
+    });
+}
+
+function clearHistory() {
+    if (!confirm('Are you sure you want to clear all chat history and learned qualities? This cannot be undone.')) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('csrf_token', '{{ csrf_token() }}');
+    
+    fetch('/ai-friend/clear-history', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to clear history');
+        }
+    })
+    .catch(error => {
+        alert('Error clearing history');
+        console.error('Clear error:', error);
+    });
+}
+
+// Enter key to send message
+document.getElementById('messageInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Auto-scroll to bottom on load
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chatContainer');
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+});
+</script>
+
+<style>
+.chat-message {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-bubble {
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.user-message .message-bubble {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+}
+
+.ai-message .message-bubble {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+}
+
+.quality-item {
+    padding: 8px;
+    border-left: 3px solid #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+    border-radius: 0 4px 4px 0;
+}
+
+#chatContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatContainer::-webkit-scrollbar-track {
+    background: #2c3034;
+}
+
+#chatContainer::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 3px;
+}
+
+#chatContainer::-webkit-scrollbar-thumb:hover {
+    background: #5a6268;
+}
+</style>
+{% endblock %}

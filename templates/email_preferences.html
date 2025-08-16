@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Email Preferences - DARKSULFOCUS{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope text-primary"></i> Email Preferences
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="text-muted mb-4">
+                                    Control which emails you receive from DARKSULFOCUS. You can always adjust these settings later.
+                                </p>
+                                
+                                <!-- Master Switch -->
+                                <div class="card mb-4" style="border: 2px solid #00ff88;">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="email_notifications" name="email_notifications" 
+                                                   {% if user.email_notifications %}checked{% endif %}>
+                                            <label class="form-check-label fw-bold" for="email_notifications">
+                                                <i class="fas fa-bell text-success"></i> Enable Email Notifications
+                                            </label>
+                                            <div class="form-text">
+                                                Master switch for all email notifications. Turn this off to disable all emails.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Individual Email Types -->
+                                <div class="email-preferences-grid">
+                                    
+                                    <!-- Daily Reminders -->
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input email-pref-toggle" type="checkbox" 
+                                                       id="daily_reminders" name="daily_reminders" 
+                                                       {% if user.daily_reminders %}checked{% endif %}>
+                                                <label class="form-check-label fw-bold" for="daily_reminders">
+                                                    <i class="fas fa-calendar-day text-primary"></i> Daily Study Reminders
+                                                </label>
+                                                <div class="form-text">
+                                                    Get reminded to study if you haven't started your session yet. 
+                                                    Sent at 6 PM IST.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Weekly Summaries -->
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input email-pref-toggle" type="checkbox" 
+                                                       id="weekly_summaries" name="weekly_summaries" 
+                                                       {% if user.weekly_summaries %}checked{% endif %}>
+                                                <label class="form-check-label fw-bold" for="weekly_summaries">
+                                                    <i class="fas fa-chart-line text-info"></i> Weekly Progress Summaries
+                                                </label>
+                                                <div class="form-text">
+                                                    Receive a summary of your study achievements every Sunday. 
+                                                    Includes stats, points earned, and progress toward goals.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Achievement Emails -->
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input email-pref-toggle" type="checkbox" 
+                                                       id="achievement_emails" name="achievement_emails" 
+                                                       {% if user.achievement_emails %}checked{% endif %}>
+                                                <label class="form-check-label fw-bold" for="achievement_emails">
+                                                    <i class="fas fa-trophy text-warning"></i> Achievement Notifications
+                                                </label>
+                                                <div class="form-text">
+                                                    Get notified when you unlock new ranks, hit point milestones, 
+                                                    or achieve study streaks. Celebrate your wins!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Challenge Emails -->
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input email-pref-toggle" type="checkbox" 
+                                                       id="challenge_emails" name="challenge_emails" 
+                                                       {% if user.challenge_emails %}checked{% endif %}>
+                                                <label class="form-check-label fw-bold" for="challenge_emails">
+                                                    <i class="fas fa-swords text-danger"></i> Challenge Notifications
+                                                </label>
+                                                <div class="form-text">
+                                                    Receive emails about study competitions: when you're challenged, 
+                                                    challenge results, and competition updates.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <div class="d-flex gap-3 mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save Preferences
+                                    </button>
+                                    <a href="{{ url_for('main.profile') }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Back to Profile
+                                    </a>
+                                </div>
+                                
+                            </div>
+                            
+                            <!-- Preview Column -->
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-eye"></i> Email Preview
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="email-preview">
+                                            <div class="preview-header">
+                                                <div class="brand-header">
+                                                    <h6 class="text-primary mb-0">DARKSULFOCUS</h6>
+                                                    <small class="text-muted">Study Platform</small>
+                                                </div>
+                                            </div>
+                                            <div class="preview-body">
+                                                <h6>Daily Reminder</h6>
+                                                <p class="small text-muted">
+                                                    Your 7-day streak is waiting! Don't let it slip away...
+                                                </p>
+                                                <div class="btn btn-sm btn-success">Start Studying</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr class="my-3">
+                                        
+                                        <div class="email-stats">
+                                            <h6>Email Frequency</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><i class="fas fa-circle text-primary"></i> Daily: 0-1 emails</li>
+                                                <li><i class="fas fa-circle text-info"></i> Weekly: 1 summary</li>
+                                                <li><i class="fas fa-circle text-warning"></i> Achievements: As earned</li>
+                                                <li><i class="fas fa-circle text-danger"></i> Challenges: As received</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.email-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.preview-body {
+    padding: 15px;
+    background: white;
+}
+
+.brand-header h6 {
+    color: #00ff88 !important;
+}
+
+.email-pref-toggle:disabled {
+    opacity: 0.5;
+}
+
+.card {
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 255, 136, 0.1);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const masterSwitch = document.getElementById('email_notifications');
+    const allSwitches = document.querySelectorAll('.email-pref-toggle');
+    
+    // Handle master switch
+    masterSwitch.addEventListener('change', function() {
+        allSwitches.forEach(toggle => {
+            toggle.disabled = !this.checked;
+            if (!this.checked) {
+                toggle.checked = false;
+            }
+        });
+    });
+    
+    // Initial state
+    if (!masterSwitch.checked) {
+        allSwitches.forEach(toggle => {
+            toggle.disabled = true;
+        });
+    }
+});
+</script>
+{% endblock %}

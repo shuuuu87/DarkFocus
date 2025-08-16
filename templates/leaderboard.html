@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Leaderboard Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card leaderboard-header">
+                <div class="card-body text-center">
+                    <h2 class="mb-3">
+                        <i class="fas fa-crown text-warning"></i> Top Performers
+                    </h2>
+                    <p class="text-muted">Top 10 users ranked by total study points</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-ol text-primary"></i> Rankings
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col" class="text-center">#</th>
+                                    <th scope="col">User</th>
+                                    <th scope="col">Rank</th>
+                                    <th scope="col" class="text-center">Points</th>
+                                    <th scope="col" class="text-center">Streak</th>
+                                    <th scope="col" class="text-center">Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in leaderboard_data %}
+                                <tr class="{% if entry.user.id == current_user.id %}table-success{% endif %}">
+                                    <td class="text-center">
+                                        {% if entry.rank == 1 %}
+                                            <i class="fas fa-trophy text-warning"></i> {{ entry.rank }}
+                                        {% elif entry.rank == 2 %}
+                                            <i class="fas fa-medal text-info"></i> {{ entry.rank }}
+                                        {% elif entry.rank == 3 %}
+                                            <i class="fas fa-medal text-warning"></i> {{ entry.rank }}
+                                        {% else %}
+                                            {{ entry.rank }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar me-3">
+                                                {% if entry.user.profile_image and entry.user.profile_image != 'default.png' %}
+                                                    <img src="{{ url_for('static', filename='uploads/profiles/' + entry.user.profile_image) }}" 
+                                                         alt="Profile" class="leaderboard-profile-image rounded-circle">
+                                                {% else %}
+                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ entry.user.username }}</div>
+                                                <small class="text-muted">{{ entry.user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% set badge_map = {
+                                            'Dormant': 'badge1.png',
+                                            'Initiate': 'badge2.png',
+                                            'Grinder': 'badge3.png',
+                                            'Executor': 'badge4.png',
+                                            'Obsessor': 'badge5.png',
+                                            'Disciplinar': 'badge6.png',
+                                            'Sentinel': 'badge7.png',
+                                            'Dominus': 'badge8.png',
+                                            'Phantom': 'badge9.png',
+                                            'Apex Mind': 'badge10.png',
+                                            'System Override': 'badge11.png',
+                                            'Darkensul Core': 'badge12.png'
+                                        } %}
+                                        <span class="badge rank-badge rank-{{ entry.rank_name.lower().replace(' ', '-') }}">
+                                            <img src="/static/img/badges/{{ badge_map.get(entry.rank_name, 'badge1.png') }}" alt="{{ entry.rank_name }} Badge" class="badge-img" style="height: 60px; width: 60px;">
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-success">{{ "%.1f"|format(entry.points) }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-fire"></i> {{ entry.streak }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if entry.last_active %}
+                                            <div class="text-muted">
+                                                <div>{{ entry.last_active.strftime('%b %d, %Y') }}</div>
+                                                <small>{{ entry.last_active.strftime('%I:%M %p') }}</small>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% if leaderboard_data|length == 0 %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <i class="fas fa-users fa-3x mb-3"></i>
+                                            <h5>No users found</h5>
+                                            <p class="text-muted">Start studying to appear on the leaderboard!</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your Position (if not in top 10) -->
+    {% if current_user not in leaderboard_data|map(attribute='user')|list %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user"></i> Your Position
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ current_user.username }}</strong>
+                            <span class="badge rank-badge rank-{{ current_user.get_rank().lower().replace(' ', '-') }} ms-2">
+                                {{ current_user.get_rank() }}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <div><strong>{{ "%.1f"|format(current_user.total_points) }}</strong> points</div>
+                            <div><span class="badge bg-danger"><i class="fas fa-fire"></i> {{ current_user.current_streak }}</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Keep studying to climb the leaderboard!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some interactivity to the leaderboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Highlight current user's row
+    const currentUserRow = document.querySelector('.table-success');
+    if (currentUserRow) {
+        currentUserRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Add tooltips for rank badges
+    const rankBadges = document.querySelectorAll('.rank-badge');
+    rankBadges.forEach(badge => {
+        badge.setAttribute('data-bs-toggle', 'tooltip');
+        badge.setAttribute('data-bs-placement', 'top');
+        badge.setAttribute('title', 'Click to learn about ranks');
+    });
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

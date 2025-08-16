@@ -1,0 +1,108 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Register - DARKSULFOCUS{% endblock %}
+
+{% block nav_title_guest %}Join DARKENSUL{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2 class="text-primary mb-0">Begin Your Journey</h2>
+            <p class="text-muted">Create your account and start studying</p>
+        </div>
+        
+        <form method="POST" class="auth-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                {{ form.username(class="form-control auth-input") }}
+                {% if form.username.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.username.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                {{ form.email(class="form-control auth-input") }}
+                {% if form.email.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.email.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    {{ form.password(class="form-control auth-input", id="password") }}
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword" onclick="togglePasswordVisibility('password', 'togglePassword')">
+                        <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.password.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                    {{ form.confirm_password(class="form-control auth-input", id="confirm_password") }}
+                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword" onclick="togglePasswordVisibility('confirm_password', 'toggleConfirmPassword')">
+                        <i class="fas fa-eye" id="toggleConfirmPasswordIcon"></i>
+                    </button>
+                </div>
+                {% if form.confirm_password.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.confirm_password.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary auth-btn w-100 mb-3">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <a href="{{ url_for('main.login') }}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePasswordVisibility(inputId, buttonId) {
+    const passwordField = document.getElementById(inputId);
+    const toggleButton = document.getElementById(buttonId);
+    const icon = toggleButton.querySelector('i');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

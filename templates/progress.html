@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Progress - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Your Progress{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Study Progress Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line text-primary"></i> Study Progress (Last 30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 400px; position: relative;">
+                        <canvas id="studyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Current Rank -->
+        <div class="col-md-6 mb-4">
+            <div class="card rank-display-card">
+                <div class="card-body text-center">
+                    <div class="rank-icon mb-3">
+                        <i class="fas fa-moon fa-4x text-primary"></i>
+                    </div>
+                    <h3 class="text-primary mb-2">{{ current_user.get_rank() }}</h3>
+                    <div class="rank-points mb-3">
+                        <span class="badge bg-success">{{ "%.1f"|format(current_user.total_points) }} Points</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 12px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ ((current_user.total_points % 300) / 300 * 100) if current_user.total_points < 5501 else 100 }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ current_user.get_rank_progress() }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Streak Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire text-danger"></i> Streak Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="streak-display text-center mb-3">
+                        <div class="streak-number">{{ current_user.current_streak }}</div>
+                        <div class="streak-label">Current Streak</div>
+                    </div>
+                    
+                    <div class="streak-rules">
+                        <div class="rule-item">
+                            <i class="fas fa-clock text-primary"></i>
+                            <span>Study 2+ hours daily to maintain streak</span>
+                        </div>
+                        <div class="rule-item">
+                            <i class="fas fa-heart text-success"></i>
+                            <span>1 grace day available if you miss</span>
+                        </div>
+                        <div class="rule-item">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <span>No 2 consecutive skips allowed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Study Progress Chart
+const ctx = document.getElementById('studyChart').getContext('2d');
+const chartData = {{ chart_data | tojson }};
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartData.map(d => d.date),
+        datasets: [{
+            label: 'Hours Studied',
+            data: chartData.map(d => d.hours),
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#fff'
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: '#ccc'
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: '#ccc',
+                    callback: function(value) {
+                        return value + 'h';
+                    }
+                }
+            }
+        },
+        elements: {
+            point: {
+                radius: 4,
+                hoverRadius: 6
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

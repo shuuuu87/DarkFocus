@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - DARKSULFOCUS{% endblock %}
+
+{% block nav_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Profile Info -->
+        <div class="col-md-4">
+            <div class="card profile-card">
+                <div class="card-body text-center">
+                    <div class="profile-avatar mb-3">
+                        {% if current_user.profile_image and current_user.profile_image != 'default.png' %}
+                            <img src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_image) }}" 
+                                 alt="Profile Picture" class="profile-image rounded-circle">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <h4 class="text-primary">{{ current_user.username }}</h4>
+                    <span class="badge bg-success mb-3">{{ current_user.get_rank() }}</span>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ "%.1f"|format(current_user.total_points) }}</div>
+                            <div class="stat-label">Points</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ current_user.current_streak }}</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ current_user.joined_date.strftime('%b %Y') }}</div>
+                            <div class="stat-label">Joined</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Update Profile -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-edit text-primary"></i> Update Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                {{ form.username(class="form-control") }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.username.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                {{ form.email(class="form-control") }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.email.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="text-muted mb-3">Profile Image</h6>
+                        
+                        <div class="mb-3">
+                            <label for="profile_image" class="form-label">Upload Profile Picture</label>
+                            {{ form.profile_image(class="form-control", id="profile_image") }}
+                            {% if form.profile_image.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.profile_image.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <small>Supported formats: JPG, JPEG, PNG, GIF. Max size: 5MB</small>
+                            </div>
+                            <div id="imagePreview" class="mt-2"></div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="text-muted mb-3">Change Password (Optional)</h6>
+                        
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            {{ form.current_password(class="form-control") }}
+                            {% if form.current_password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.current_password.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                {{ form.new_password(class="form-control") }}
+                                {% if form.new_password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.new_password.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                {{ form.confirm_password(class="form-control") }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.confirm_password.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Account Statistics -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar text-primary"></i> Account Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <div class="stat-value text-primary">{{ "%.1f"|format(current_user.total_points) }}</div>
+                                <div class="stat-label">Total Points</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <div class="stat-value text-warning">{{ current_user.get_rank() }}</div>
+                                <div class="stat-label">Current Rank</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <div class="stat-value text-danger">{{ current_user.current_streak }}</div>
+                                <div class="stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <div class="stat-value text-info">{{ current_user.max_streak }}</div>
+                                <div class="stat-label">Days Since Joined</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6 class="text-muted mb-2">Rank Progress</h6>
+                        <div class="progress mb-2" style="height: 10px;">
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                 style="width: {{ (current_user.total_points % 300) / 3 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ current_user.get_rank_progress() }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Profile image preview
+document.getElementById('profile_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <div class="text-center">
+                    <img src="${e.target.result}" class="profile-image-preview" alt="Preview">
+                    <div class="mt-2">
+                        <small class="text-muted">Preview - ${file.name}</small>
+                    </div>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = '';
+    }
+});
+</script>
+{% endblock %}
