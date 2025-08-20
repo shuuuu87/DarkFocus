@@ -25,6 +25,17 @@ def index():
         return redirect(url_for('main.home'))
     return redirect(url_for('main.login'))
 
+@main.route('/offline.html')
+def offline():
+    """Offline fallback page when app is used without internet"""
+    return render_template('offline.html')
+
+@main.route('/sw.js')
+def service_worker():
+    """Serve service worker from root for proper scope"""
+    from flask import send_from_directory
+    return send_from_directory('static/js', 'service-worker.js', mimetype='application/javascript')
+
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:

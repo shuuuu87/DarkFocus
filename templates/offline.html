@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - DARKSULFOCUS</title>
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 500px;
+            padding: 2rem;
+        }
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+        p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .retry-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .retry-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            text-decoration: none;
+        }
+        .features {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .feature {
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+        }
+        .feature i {
+            width: 30px;
+            margin-right: 1rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>You're Offline</h1>
+        <p>Don't worry! DARKSULFOCUS works offline too. You can still access cached pages and complete tasks. Your progress will sync when you're back online.</p>
+        
+        <a href="/" class="retry-btn">
+            ↻ Try Again
+        </a>
+
+        <div class="features">
+            <div class="feature">
+                <i>✓</i>
+                <span>Complete tasks offline</span>
+            </div>
+            <div class="feature">
+                <i>✓</i>
+                <span>Earn points offline</span>
+            </div>
+            <div class="feature">
+                <i>✓</i>
+                <span>Use timers normally</span>
+            </div>
+            <div class="feature">
+                <i>✓</i>
+                <span>Auto-sync when online</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-retry when back online
+        window.addEventListener('online', () => {
+            window.location.href = '/';
+        });
+
+        // Update connection status
+        function updateStatus() {
+            if (navigator.onLine) {
+                window.location.href = '/';
+            }
+        }
+
+        // Check connection periodically
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>
