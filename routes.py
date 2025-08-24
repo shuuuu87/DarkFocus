@@ -10,7 +10,7 @@ from sqlalchemy import desc
 import logging
 import pytz
 
-from extensions import db, mail
+from app import db, mail
 from models import User, Task, Challenge, DailyStats, AIChatHistory, UserQuality
 from forms import LoginForm, RegisterForm, ProfileForm, TaskForm, ChallengeForm, ForgotPasswordForm, ResetPasswordForm
 from utils import send_verification_email, send_reset_email
@@ -24,17 +24,6 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
     return redirect(url_for('main.login'))
-
-@main.route('/offline.html')
-def offline():
-    """Offline fallback page when app is used without internet"""
-    return render_template('offline.html')
-
-@main.route('/sw.js')
-def service_worker():
-    """Serve service worker from root for proper scope"""
-    from flask import send_from_directory
-    return send_from_directory('static/js', 'service-worker.js', mimetype='application/javascript')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

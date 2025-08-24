@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from extensions import db
+from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import pytz
@@ -22,15 +22,20 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(100))
     reset_token_expires = db.Column(db.DateTime)
     joined_date = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # AI Friend fields
-    ai_name = db.Column(db.String(64), default='AI Friend')
-    ai_personality = db.Column(db.String(32), default='supportive')
-
+    
     # Email preferences
     email_notifications = db.Column(db.Boolean, default=True)
+    daily_reminders = db.Column(db.Boolean, default=True)
+    weekly_summaries = db.Column(db.Boolean, default=True)
+    achievement_emails = db.Column(db.Boolean, default=True)
+    challenge_emails = db.Column(db.Boolean, default=True)
+    
+    # AI Friend preferences
+    ai_name = db.Column(db.String(64), default="StudyBot")
+    ai_personality = db.Column(db.String(50), default="supportive")  # supportive, motivational, casual, professional
     
     # Relationships
+    tasks = db.relationship('Task', backref='user', lazy=True, cascade='all, delete-orphan')
     sent_challenges = db.relationship('Challenge', foreign_keys='Challenge.challenger_id', backref='challenger', lazy=True)
     received_challenges = db.relationship('Challenge', foreign_keys='Challenge.challenged_id', backref='challenged', lazy=True)
     daily_stats = db.relationship('DailyStats', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -101,39 +106,45 @@ class User(UserMixin, db.Model):
         today = datetime.now(ist).date()
 
         # Initialize fields if they don't exist
-        if self.last_study_date is None:
-            self.last_study_date = today
-            self.current_streak = 1
+        if not hasattr(self, 'grace_days_used') or self.grace_days_used is None:
             self.grace_days_used = 0
-        else:
-            days_since_last_study = (today - self.last_study_date).days
-            
-            if days_since_last_study == 0:
-                # Same day, no streak change
-                pass
-            elif days_since_last_study == 1:
-                # Next day, increment streak
-                self.current_streak += 1
-            elif days_since_last_study == 2:
-                # 1-day gap, use grace day if available and if studied enough today
-                if self.grace_days_used < 2 and study_minutes_today >= 60:
-                    self.grace_days_used += 1
+
+        # Minimum study time requirement (120 minutes)
+        if study_minutes_today >= 120:
+            if self.last_study_date:
+                days_diff = (today - self.last_study_date).days
+
+                if days_diff == 0:
+                    # Same day - don't change streak, just update study date
+                    pass
+                elif days_diff == 1:
+                    # Consecutive day - increment streak
                     self.current_streak += 1
-                else:
-                    # No grace days or not enough study time
+                elif days_diff == 2:
+                    # 1-day gap - check if grace days available
+                    if self.grace_days_used < 3:  # Allow 3 grace days per streak
+                        self.grace_days_used += 1
+                        # Streak remains unchanged - grace period used
+                        pass
+                    else:
+                        # No more grace days - streak is broken
+                        self.current_streak = 1
+                        self.grace_days_used = 0
+                elif days_diff >= 3:
+                    # 2+ day gap - streak is broken
                     self.current_streak = 1
                     self.grace_days_used = 0
             else:
-                # 2+ day gap, reset streak
+                # First time studying or no previous study date
                 self.current_streak = 1
                 self.grace_days_used = 0
 
-        self.last_study_date = today
-        if not self.max_streak:
-            self.max_streak = 0
-        if self.current_streak > self.max_streak:
-            self.max_streak = self.current_streak
-            
+            self.last_study_date = today
+            if not self.max_streak:
+                self.max_streak = 0
+            if self.current_streak > self.max_streak:
+                self.max_streak = self.current_streak
+                
     @staticmethod
     def check_all_users_streaks():
         """Check and update streaks for all users - called daily by background service"""
@@ -141,25 +152,6 @@ class User(UserMixin, db.Model):
         for user in users:
             user.check_and_update_streak()
         db.session.commit()
-
-class AIChatHistory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    sender = db.Column(db.String(10))  # 'user' or 'ai'
-    message = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-class UserQuality(db.Model):
-    __table_args__ = (db.UniqueConstraint('user_id', 'quality_name', name='unique_user_quality'),)
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    quality_name = db.Column(db.String(64))
-    quality_value = db.Column(db.String(256))
-    learned_date = db.Column(db.DateTime, default=datetime.utcnow)
-    daily_reminders = db.Column(db.Boolean, default=True)
-    weekly_summaries = db.Column(db.Boolean, default=True)
-    achievement_emails = db.Column(db.Boolean, default=True)
-    challenge_emails = db.Column(db.Boolean, default=True)
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -339,3 +331,25 @@ class DailyStats(db.Model):
     tasks_completed = db.Column(db.Integer, default=0)
     
     __table_args__ = (db.UniqueConstraint('user_id', 'date', name='unique_user_date'),)
+
+class AIChatHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    sender = db.Column(db.String(10), nullable=False)  # 'user' or 'ai'
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Reference back to user
+    user = db.relationship('User', backref=db.backref('ai_chats', lazy=True, cascade='all, delete-orphan'))
+
+class UserQuality(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    quality_name = db.Column(db.String(64), nullable=False)
+    quality_value = db.Column(db.String(256), nullable=False)
+    learned_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Reference back to user
+    user = db.relationship('User', backref=db.backref('ai_qualities', lazy=True, cascade='all, delete-orphan'))
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'quality_name', name='unique_user_quality'),)

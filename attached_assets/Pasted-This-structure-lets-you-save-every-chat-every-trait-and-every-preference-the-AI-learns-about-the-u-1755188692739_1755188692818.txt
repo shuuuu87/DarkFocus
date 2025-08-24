@@ -1,0 +1,83 @@
+This structure lets you save every chat, every trait, and every preference the AI learns about the user.
+
+3. Building the Dedicated AI Friend Page
+A. Flask Route and Template
+Create a new route in your Flask app, e.g., /ai_friend, and a corresponding template (ai_friend.html). This page will have:
+
+A chat window for conversation.
+An input for the user to set the AI’s name.
+Display of the AI’s avatar and user’s name.
+Optionally, a summary of user qualities the AI knows.
+B. Frontend Chat Interface
+Use JavaScript to handle sending messages and updating the chat window. When the user sends a message:
+
+The message is sent to the Flask backend via AJAX.
+The backend processes the message, generates a reply (using AI or rule-based logic), and saves both messages in the database.
+The frontend updates the chat window with the new messages.
+4. Making the AI Personal and Memorable
+A. Greeting and Naming
+When the user first visits the page, the AI should greet them by name:
+
+“Hello, Alex! I’m your AI friend. What would you like to call me?”
+The user can set a name for the AI, which is saved in the database and used in all future chats.
+B. Remembering User Qualities
+As the user chats, the AI should extract and remember qualities:
+
+If the user says, “I like studying Math in the morning,” save this as a quality.
+If the user says, “I struggle with focus,” save this too.
+These qualities are stored in the UserQuality table and can be referenced in future conversations:
+
+“Alex, since you like studying Math in the morning, should I add it to your timetable first?”
+5. Collecting and Annotating Training Data
+To make the AI smart and helpful, you need to train it with real conversations. Steps:
+
+A. Collect Sample Dialogues
+Write out example conversations covering:
+
+Greetings and naming.
+Timetable requests.
+Motivation and advice.
+User sharing qualities and preferences.
+B. Annotate Data
+Label each message with its intent (e.g., greeting, set_ai_name, request_timetable, share_quality) and entities (e.g., subject, time_of_day, quality).
+
+Example:
+
+Intent: set_ai_name
+“I want to call you Buddy.”
+Intent: share_quality
+“I study best in the evening.”
+6. Training the Chatbot
+A. Framework Choice
+Use Rasa or a similar NLP framework for training. Rasa is Python-based and integrates well with Flask.
+
+B. Training Steps
+Define Intents and Entities:
+In Rasa’s nlu.yml, add examples for each intent and entity.
+
+Stories:
+In stories.yml, define conversation flows (e.g., greeting → set_ai_name → request_timetable).
+
+Custom Actions:
+In actions.py, write Python functions to:
+
+Save and retrieve the AI’s name.
+Save and recall user qualities.
+Generate personalized timetables.
+Train the Model:
+Run rasa train to build your model.
+
+Test and Refine:
+Use rasa shell to chat with your bot, add more examples as needed.
+
+7. Integrating with Flask
+When the user sends a message, Flask passes it to Rasa (or your custom logic).
+Rasa returns a reply, which Flask sends back to the frontend.
+Both user and AI messages are saved in AIChatHistory.
+Qualities and AI name are updated in the database as needed.
+8. Making the AI Remember and Help
+On every chat, the AI checks the database for the user’s name, AI’s name, and known qualities.
+The AI uses this info to personalize responses and suggestions.
+For timetable requests, the AI uses stored preferences to generate a custom schedule.
+9. Summary
+By following these steps, you’ll create a dedicated AI Friend page in your DarkSulFocus app. Each user will have a unique AI companion that remembers their name, qualities, and preferences, and offers personalized help. You’ll collect and annotate training data, train your chatbot with Rasa, and integrate it seamlessly with your Flask backend and database. The result is a truly modern, memorable, and supportive AI experience for every user—making your app stand out as a leader in personalized educational technology.

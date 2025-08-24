@@ -12,7 +12,7 @@ class BackgroundTimerService:
     def __init__(self):
         self.running = False
         self.thread = None
-        self.check_interval = 30  # Check every 30 seconds
+        self.check_interval = 60  # Check every 30 seconds
         
     def start(self):
         """Start the background timer service"""
