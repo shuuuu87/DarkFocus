@@ -10,12 +10,11 @@ from sqlalchemy import desc
 import logging
 import pytz
 
-from extensions import db, mail
-from models import User, Task, Challenge, DailyStats, AIChatHistory, UserQuality
+from app import db, mail
+from models import User, Task, Challenge, DailyStats
 from forms import LoginForm, RegisterForm, ProfileForm, TaskForm, ChallengeForm, ForgotPasswordForm, ResetPasswordForm
 from utils import send_verification_email, send_reset_email
 from email_service import EmailService
-from ai_friend_service import ai_friend_service
 
 main = Blueprint('main', __name__)
 
@@ -24,17 +23,6 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
     return redirect(url_for('main.login'))
-
-@main.route('/offline.html')
-def offline():
-    """Offline fallback page when app is used without internet"""
-    return render_template('offline.html')
-
-@main.route('/sw.js')
-def service_worker():
-    """Serve service worker from root for proper scope"""
-    from flask import send_from_directory
-    return send_from_directory('static/js', 'service-worker.js', mimetype='application/javascript')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -610,94 +598,3 @@ def save_profile_image(form_image):
     img.save(picture_path)
     
     return picture_fn
-
-@main.route('/ai-friend')
-@login_required
-def ai_friend():
-    """AI Friend chat page"""
-    # Get recent chat history
-    chat_history = ai_friend_service.get_chat_history(current_user, limit=20)
-    chat_history.reverse()  # Show oldest first
-    
-    # Get user qualities for display
-    user_qualities = UserQuality.query.filter_by(user_id=current_user.id).all()
-    
-    return render_template('ai_friend.html', 
-                         chat_history=chat_history,
-                         user_qualities=user_qualities,
-                         ai_enabled=ai_friend_service.ai_enabled)
-
-@main.route('/ai-friend/chat', methods=['POST'])
-@login_required
-def ai_friend_chat():
-    """Process AI Friend chat message"""
-    try:
-        # Handle both JSON and form data
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form.to_dict()
-            
-        user_message = data.get('message', '').strip()
-        
-        if not user_message:
-            return jsonify({'error': 'Message cannot be empty'}), 400
-        
-        # Process the message and get AI response
-        ai_response = ai_friend_service.process_user_message(current_user, user_message)
-        
-        return jsonify({
-            'success': True,
-            'ai_response': ai_response,
-            'timestamp': datetime.utcnow().isoformat()
-        })
-    
-    except Exception as e:
-        current_app.logger.error(f"AI Friend chat error: {e}")
-        return jsonify({'error': 'Failed to process message'}), 500
-
-@main.route('/ai-friend/settings', methods=['POST'])
-@login_required
-def ai_friend_settings():
-    """Update AI Friend settings"""
-    try:
-        # Handle both JSON and form data
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form.to_dict()
-        
-        # Update AI name
-        if 'ai_name' in data:
-            new_name = data['ai_name'].strip()[:64]
-            if new_name:
-                current_user.ai_name = new_name
-        
-        # Update personality
-        if 'ai_personality' in data:
-            personality = data['ai_personality']
-            if personality in ['supportive', 'motivational', 'casual', 'professional']:
-                current_user.ai_personality = personality
-        
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'Settings updated successfully'})
-    
-    except Exception as e:
-        current_app.logger.error(f"Settings update error: {e}")
-        return jsonify({'error': 'Failed to update settings'}), 500
-
-@main.route('/ai-friend/clear-history', methods=['POST'])
-@login_required
-def clear_ai_history():
-    """Clear AI chat history"""
-    try:
-        AIChatHistory.query.filter_by(user_id=current_user.id).delete()
-        UserQuality.query.filter_by(user_id=current_user.id).delete()
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'Chat history and learned qualities cleared'})
-    
-    except Exception as e:
-        current_app.logger.error(f"Clear history error: {e}")
-        return jsonify({'error': 'Failed to clear history'}), 500
